@@ -10,10 +10,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        '/Main': (context) => MyHomePage(),
+        '/': (context) => MyHomePage(),
       },
-      initialRoute: '/Main',
-      home: MyHomePage(),
+      initialRoute: '/',
     );
   }
 }
@@ -57,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
           //if current button is not the add button, index 2, then we navigate to the tapped page
           else {
             //making sure that the BottomSheet is closed
-            Navigator.popUntil(context, ModalRoute.withName('/Main'));
+            Navigator.popUntil(context, ModalRoute.withName('/'));
             //if tapped button index is 3 or 4, we need to decrease there value because we have only 4 pages
             if (index == 3 || index == 4) {
               index--;
@@ -84,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       controller: _pageController,
       onPageChanged: (index) {
         //making sure that the BottomSheet is closed
-        Navigator.popUntil(context, ModalRoute.withName('/Main'));
+        Navigator.popUntil(context, ModalRoute.withName('/'));
         //changing currentPageIndex value on page change from sliding gesture of the PageView
         // and updating ui so the NavBar also shows the correct page displayed
         setState(() => _currentPageIndex = index);
