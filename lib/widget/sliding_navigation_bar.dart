@@ -110,7 +110,7 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
                     calculateNewSelected(0);
                   },
                   //title of each button
-                  text: 'Home Home Home Home',
+                  text: 'Home',
                   //icon date for each button
                   iconData: Icons.home,
                 ),
@@ -121,7 +121,7 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
                     widget.tappedIndex(1);
                     calculateNewSelected(1);
                   },
-                  text: 'Store Store',
+                  text: 'Store',
                   iconData: Icons.store,
                 ),
                 CustomNavButton(
@@ -144,7 +144,7 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
                     widget.tappedIndex(3);
                     calculateNewSelected(3);
                   },
-                  text: 'Explore Explore Explore',
+                  text: 'Explore',
                   iconData: Icons.explore,
                 ),
                 CustomNavButton(

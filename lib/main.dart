@@ -149,7 +149,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
             backgroundColor: Colors.white);
     persistentBottomSheetController.closed.then((v) {
-      debugPrint(_pageController.page.round().toString());
       setState(() {
         _currentPageIndex = _pageController.page.round() < 2
             ? _pageController.page.round()
