@@ -22,11 +22,44 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
   double paddingFromLeftBlackContainer;
   //width of the screen in double
   double screenWidth;
+  //boolean to determine if middle button is tapped
+  bool middleButtonTapped = false;
+  List<GlobalKey> _listOfKeys = [
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey()
+  ];
+  @override
+  void initState() {
+    super.initState();
+    setBlackContainerSizeAndPadding(indexSelected);
+  }
+
   @override
   void didUpdateWidget(covariant SlidingNavigationBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     //making sure that the Selected NavBar button is reflected to what page is displayed
-    calculateSelectedIndexFromPageViewGesture();
+    setBlackContainerSizeAndPadding(indexSelected);
+  }
+
+  setBlackContainerSizeAndPadding(indexSelected) async {
+    indexSelected = widget.scrolledToPageIndex;
+    calculateNewSelected(widget.scrolledToPageIndex);
+
+    await Future.delayed(Duration.zero);
+
+    final buttonRenderBox = _listOfKeys[indexSelected]
+        .currentContext
+        .findRenderObject() as RenderBox;
+    final position = buttonRenderBox.localToGlobal(Offset.zero);
+    setState(() {
+      paddingFromLeftBlackContainer = position.dx - 5;
+      widthOfBlackContainer = indexSelected == 2
+          ? _listOfKeys[indexSelected].currentContext.size.width
+          : _listOfKeys[indexSelected].currentContext.size.width;
+    });
   }
 
   @override
@@ -36,9 +69,10 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 5),
       color: Colors.white,
-      height: 50,
+      height: 55,
       child: Container(
         child: Stack(
+          overflow: Overflow.visible,
           alignment: Alignment.center,
           children: [
             //Positionning the balck container to the correct index of the tapped button
@@ -46,12 +80,11 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
               // if paddingFromLeftBlackContainer is null, there we assume that we are in initial state
               //and current index is 0
               //screen with - 10 because we do not want the black container to reach sides of nighbour buttons
-              left: paddingFromLeftBlackContainer == null
-                  ? ((screenWidth - 10) / 9) * indexSelected
-                  : paddingFromLeftBlackContainer,
+              left: paddingFromLeftBlackContainer,
               //each button is 2 flexs in value except the add button which is one
               // that is why we have intialized black contaienr to be the width of the screen minus padding divided by 9(9 flex)
-              width: ((screenWidth - 10) / 9) * (indexSelected == 2 ? 1 : 2),
+              // width: ((screenWidth - 10) / 9) * (indexSelected == 2 ? 1 : 2),
+              width: widthOfBlackContainer,
               height: 40,
               child: Container(
                 decoration: BoxDecoration(
@@ -66,10 +99,9 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
               children: [
                 // creating a custom button
                 CustomNavButton(
+                  widgetKey: _listOfKeys[0],
                   // whether this button is selected or not, we pass a boolean to the widget to draw correct parameters
                   isSelected: indexSelected == 0 ? true : false,
-                  //flex 2, because every button is the same size except the middle one which has flex value on one, which means it has half of the size of other buttons
-                  flex: 2,
                   //a funtion which is triggered by a gesture detector
                   function: () {
                     //callig this funtion makes sure the page displayed is changed with tapping each button
@@ -78,44 +110,46 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
                     calculateNewSelected(0);
                   },
                   //title of each button
-                  text: 'Home',
+                  text: 'Home Home Home Home',
                   //icon date for each button
                   iconData: Icons.home,
                 ),
                 CustomNavButton(
+                  widgetKey: _listOfKeys[1],
                   isSelected: indexSelected == 1 ? true : false,
-                  flex: 2,
                   function: () {
                     widget.tappedIndex(1);
                     calculateNewSelected(1);
                   },
-                  text: 'Store',
+                  text: 'Store Store',
                   iconData: Icons.store,
                 ),
                 CustomNavButton(
+                  widgetKey: _listOfKeys[2],
                   isSelected: indexSelected == 2 ? true : false,
-                  flex: 1,
-                  function: () {
+                  function: () async {
+                    middleButtonTapped = true;
                     widget.tappedIndex(2);
-                    calculateNewSelected(2);
+                    await calculateNewSelected(2);
+                    setBlackContainerSizeAndPadding(2);
                   },
                   //the only button which has no text is add button
                   text: '',
                   iconData: Icons.add,
                 ),
                 CustomNavButton(
+                  widgetKey: _listOfKeys[3],
                   isSelected: indexSelected == 3 ? true : false,
-                  flex: 2,
                   function: () {
                     widget.tappedIndex(3);
                     calculateNewSelected(3);
                   },
-                  text: 'Explore',
+                  text: 'Explore Explore Explore',
                   iconData: Icons.explore,
                 ),
                 CustomNavButton(
+                  widgetKey: _listOfKeys[4],
                   isSelected: indexSelected == 4 ? true : false,
-                  flex: 2,
                   function: () {
                     widget.tappedIndex(4);
                     calculateNewSelected(4);
@@ -131,50 +165,7 @@ class _SlidingNavigationBarState extends State<SlidingNavigationBar> {
     );
   }
 
-  calculateSelectedIndexFromPageViewGesture() async {
-    // making sure that the widget tree is build, then we update values
-    await Future.delayed(Duration.zero);
-    //if page scrolled to has index of 0 or 1, we proceed normally
-    if (widget.scrolledToPageIndex == 0 || widget.scrolledToPageIndex == 1) {
-      indexSelected = widget.scrolledToPageIndex;
-      calculateNewSelected(indexSelected);
-      //if page scrolled to has index of 2 or 3, we have to increase thier value by one, becase we have 4 pages with 5 buttons
-      //however the middle button does not show any page and it is not connected to any pages
-    } else if (widget.scrolledToPageIndex == 2 ||
-        widget.scrolledToPageIndex == 3) {
-      indexSelected = widget.scrolledToPageIndex + 1;
-      calculateNewSelected(indexSelected);
-    }
-  }
-
-  calculateNewSelected(int indexOfTappedIcon) {
-    //updating and moving the black button to correct position of the button tapped
-    // multiplier value is used to move the black bar to correct location
-    if (indexOfTappedIcon == 0) {
-      customSetState(indexOfTapped: indexOfTappedIcon, multiplierValue: 0);
-    } else if (indexOfTappedIcon == 1) {
-      customSetState(indexOfTapped: indexOfTappedIcon, multiplierValue: 2);
-    } else if (indexOfTappedIcon == 2) {
-      setState(() {
-        paddingFromLeftBlackContainer = ((screenWidth - 10) / 9) * 4;
-        //we make sure that widthOfBlackContainer is half when button with index 2 is tapped
-        // because button 2 is the middle one
-        widthOfBlackContainer =
-            ((screenWidth - 10) / 9) * (indexSelected == 2 ? 1 : 2);
-        indexSelected = indexOfTappedIcon;
-      });
-    } else if (indexOfTappedIcon == 3) {
-      customSetState(indexOfTapped: indexOfTappedIcon, multiplierValue: 5);
-    } else if (indexOfTappedIcon == 4) {
-      customSetState(indexOfTapped: indexOfTappedIcon, multiplierValue: 7);
-    }
-  }
-
-  customSetState({int indexOfTapped, int multiplierValue}) {
-    setState(() {
-      paddingFromLeftBlackContainer =
-          ((screenWidth - 10) / 9) * multiplierValue;
-      indexSelected = indexOfTapped;
-    });
+  calculateNewSelected(int indexOfTappedIcon) async {
+    indexSelected = indexOfTappedIcon;
   }
 }

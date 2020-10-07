@@ -1,6 +1,8 @@
 import 'package:assignment/widget/sliding_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
+import 'widget/each_page.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -47,33 +49,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       key: scaffoldState,
       backgroundColor: Colors.grey,
-      bottomNavigationBar: SlidingNavigationBar(
-        tappedIndex: (int index) {
-          //Checking current button tapped from NavBar
-          //if current button index tapped is 2, then the add button is tapped and we show the BottomSheet
-          if (index == 2)
-            showModalBottomSheetMethod();
-          //if current button is not the add button, index 2, then we navigate to the tapped page
-          else {
-            //making sure that the BottomSheet is closed
-            Navigator.popUntil(context, ModalRoute.withName('/'));
-            //if tapped button index is 3 or 4, we need to decrease there value because we have only 4 pages
-            if (index == 3 || index == 4) {
-              index--;
-            }
-            //updating the ui and navigating to the page corresponding to the index tapped
-            setState(() {
-              _pageController.animateToPage(index,
-                  curve: Curves.linear, duration: Duration(milliseconds: 100));
-              _currentPageIndex = index;
-            });
-          }
-        },
-        //passing current page index to our NavBar so we can update selected button
-        //based on the sliding gesture used to change current page displayed
-        scrolledToPageIndex: _currentPageIndex,
-      ),
+      bottomNavigationBar: buildSlidingNavigationBar(context),
       body: buildBodyOfMyHomePage(context),
+    );
+  }
+
+  buildSlidingNavigationBar(BuildContext context) {
+    return SlidingNavigationBar(
+      tappedIndex: (int index) {
+        //Checking current button tapped from NavBar
+        //if current button index tapped is 2, then the add button is tapped and we show the BottomSheet
+        if (index == 2) {
+          showModalBottomSheetMethod();
+          setState(() {
+            _currentPageIndex = 2;
+          });
+        }
+        //if current button is not the add button, index 2, then we navigate to the tapped page
+        else {
+          //making sure that the BottomSheet is closed
+          Navigator.popUntil(context, ModalRoute.withName('/'));
+          //if tapped button index is 3 or 4, we need to decrease there value because we have only 4 pages
+          if (index == 3 || index == 4) {
+            index--;
+          }
+          //navigating to the page corresponding to the index tapped
+          _pageController.animateToPage(index,
+              curve: Curves.linear, duration: Duration(milliseconds: 300));
+        }
+      },
+      //passing current page index to our NavBar so we can update selected button
+      //based on the sliding gesture used to change current page displayed
+      scrolledToPageIndex: _currentPageIndex,
     );
   }
 
@@ -86,45 +93,68 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.popUntil(context, ModalRoute.withName('/'));
         //changing currentPageIndex value on page change from sliding gesture of the PageView
         // and updating ui so the NavBar also shows the correct page displayed
-        setState(() => _currentPageIndex = index);
+        setState(() {
+          if (index < 2) {
+            _currentPageIndex = index;
+          } else
+            _currentPageIndex = index + 1;
+        });
       },
       children: [
-        Container(
+        EachPage(
           color: Colors.blueGrey,
+          text: 'First Page',
+          textColor: Colors.white,
         ),
-        Container(
-          color: Colors.red,
+        EachPage(
+          color: Colors.red.shade300,
+          text: 'Second Page',
+          textColor: Colors.black,
         ),
-        Container(
-          color: Colors.yellow,
+        EachPage(
+          color: Colors.yellow.shade300,
+          text: 'Third Page',
+          textColor: Colors.black,
         ),
-        Container(
-          color: Colors.indigo,
+        EachPage(
+          color: Colors.indigo.shade300,
+          text: 'Fourth Page',
+          textColor: Colors.white,
         ),
       ],
     );
   }
 
-  showModalBottomSheetMethod() {
+  showModalBottomSheetMethod() async {
     //Showing BottomSheet when add button tapped on the NavBar
-    scaffoldState.currentState.showBottomSheet(
-      (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ListTile(
-            leading: Icon(Icons.camera),
-            title: Text('Open Camera'),
-          ),
-          ListTile(
-            leading: Icon(Icons.photo),
-            title: Text('Choose from Gallary'),
-          ),
-          ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Write a Story'),
-          ),
-        ],
-      ),
-    );
+    PersistentBottomSheetController persistentBottomSheetController;
+    persistentBottomSheetController =
+        scaffoldState.currentState.showBottomSheet(
+            (context) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ListTile(
+                      leading: Icon(Icons.camera),
+                      title: Text('Open Camera'),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.photo),
+                      title: Text('Choose from Gallary'),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.edit),
+                      title: Text('Write a Story'),
+                    ),
+                  ],
+                ),
+            backgroundColor: Colors.white);
+    persistentBottomSheetController.closed.then((v) {
+      debugPrint(_pageController.page.round().toString());
+      setState(() {
+        _currentPageIndex = _pageController.page.round() < 2
+            ? _pageController.page.round()
+            : _pageController.page.round() + 1;
+      });
+    });
   }
 }
